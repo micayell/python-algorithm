@@ -1,5 +1,3 @@
-a=-3//3
-
-a=-24//3
-
-print(a)
+visited=[0 for _ in range(4)]
+visited=[0]*4
+print(visited)
