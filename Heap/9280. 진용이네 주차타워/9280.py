@@ -1,8 +1,8 @@
-import sys
-import os
+# import sys
+# import os
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.stdin = open(os.path.join(current_dir,'input.txt'),'r')
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# sys.stdin = open(os.path.join(current_dir,'input.txt'),'r')
 
 import heapq
 from collections import deque
