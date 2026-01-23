@@ -1,0 +1,13 @@
+N = int(input())
+heights = [int(input()) for _ in range(N)]
+
+# 현재 빌딩의 옥상을 볼 수 있는 왼쪽 빌딩은 몇개가 있는가?
+benchmarking = 0
+stack = []
+for h in heights:
+    while stack and stack[-1] <= h:
+        stack.pop()
+    benchmarking += len(stack)
+    stack.append(h)
+
+print(benchmarking)
