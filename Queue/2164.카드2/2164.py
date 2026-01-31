@@ -1,15 +1,15 @@
 from collections import deque
 
-N=int(input())
+N = int(input())
 
-queue=deque()
-queue.extend(range(1,N+1))
+queue = deque()
+queue.extend(range(1, N + 1))
 
 while queue:
-    x=queue.popleft()
+    x = queue.popleft()
 
     if queue:
-        y=queue.popleft()
+        y = queue.popleft()
         queue.append(y)
 
     else:
