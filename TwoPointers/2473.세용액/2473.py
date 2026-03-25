@@ -21,11 +21,7 @@ for i in range(N - 2):
 
         if res > abs(temp):
             res = abs(temp)
-            res_list[0], res_list[1], res_list[2] = (
-                fix_value,
-                solution[left],
-                solution[right],
-            )
+            res_list = [fix_value, solution[left], solution[right]]
 
         if temp < 0:
             left += 1
