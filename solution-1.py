@@ -1,67 +1,123 @@
 import sys
-from copy import deepcopy
 
-# 입력 받기
-n = int(sys.stdin.readline())
-board = [list(map(int, sys.stdin.readline().split())) for _ in range(n)]
+input = sys.stdin.readline
 
-def rotate_90(board):
-    """보드를 시계 방향으로 90도 회전시키는 함수"""
-    new_board = [[0] * n for _ in range(n)]
-    for r in range(n):
-        for c in range(n):
-            new_board[c][n - 1 - r] = board[r][c]
-    return new_board
 
-def move_left(board):
-    """모든 블록을 왼쪽으로 미는 함수 (합치기 로직 포함)"""
-    new_board = [[0] * n for _ in range(n)]
-    
-    for i in range(n):
-        # 1. 0을 제외한 숫자들만 모으기
-        nums = [x for x in board[i] if x != 0]
-        
-        # 2. 왼쪽부터 인접한 같은 숫자 합치기
-        merged = []
-        skip = False
-        for j in range(len(nums)):
-            if skip:
-                skip = False
-                continue
-            
-            if j + 1 < len(nums) and nums[j] == nums[j+1]:
-                merged.append(nums[j] * 2)
-                skip = True  # 합쳐진 뒷 숫자는 건너뜀
+def solve():
+    T = int(input())
+
+    for _ in range(T):
+        N, W = map(int, input().split())
+        enemy = [list(map(int, input().split())) for _ in range(2)]
+
+        u = [0] + enemy[0]
+        d = [0] + enemy[1]
+
+        if N == 1:
+            if u[1] + d[1] <= W:
+                print(1)
             else:
-                merged.append(nums[j])
-        
-        # 3. 새로운 보드에 채워 넣기 (나머지는 0)
-        for j in range(len(merged)):
-            new_board[i][j] = merged[j]
-            
-    return new_board
+                print(2)
+            continue
 
-def dfs(board, depth):
-    """5번 이동하는 모든 경우의 수를 탐색 (DFS)"""
-    global answer
-    
-    # 기저 사례: 5번 이동 시 최대 블록 값 갱신
-    if depth == 5:
-        for row in board:
-            answer = max(answer, max(row))
-        return
+        ans = float("inf")
 
-    # 4방향 시뮬레이션
-    temp_board = deepcopy(board)
-    for _ in range(4):
-        # 왼쪽으로 밀기 수행
-        moved_board = move_left(temp_board)
-        # 다음 단계 탐색
-        dfs(moved_board, depth + 1)
-        # 보드를 90도 회전시켜 다음 루프에서 다른 방향을 왼쪽으로 밀 수 있게 함
-        temp_board = rotate_90(temp_board)
+        def run_dp(a, b, c, u_arr, d_arr):
+            for i in range(2, N + 1):
+                b[i] = a[i - 1] + 1
+                if u_arr[i] + u_arr[i - 1] <= W:
+                    b[i] = min(b[i], c[i - 1] + 1)
 
-# 초기화 및 실행
-answer = 0
-dfs(board, 0)
-print(answer)
+                c[i] = a[i - 1] + 1
+                if d_arr[i] + d_arr[i - 1] <= W:
+                    c[i] = min(c[i], b[i - 1] + 1)
+
+                a[i] = min(b[i] + 1, c[i] + 1)
+                if u_arr[i] + d_arr[i] <= W:
+                    a[i] = min(a[i], a[i - 1] + 1)
+                if u_arr[i] + u_arr[i - 1] <= W and d_arr[i] + d_arr[i - 1] <= W:
+                    a[i] = min(a[i], a[i - 2] + 2)
+
+        # ----------------------------------------------------
+        # Case 0: 1번과 N번 열이 전혀 연결되지 않은 경우
+        # ----------------------------------------------------
+        a, b, c = (
+            [float("inf")] * (N + 1),
+            [float("inf")] * (N + 1),
+            [float("inf")] * (N + 1),
+        )
+        a[0] = 0
+        a[1] = 1 if u[1] + d[1] <= W else 2
+        b[1] = 1
+        c[1] = 1
+
+        run_dp(a, b, c, u, d)
+        ans = min(ans, a[N])
+
+        # ----------------------------------------------------
+        # Case 1: 위쪽(안쪽 원) 1번과 N번이 연결된 경우
+        # ----------------------------------------------------
+        if u[1] + u[N] <= W:
+            a, b, c = (
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+            )
+            a[0] = 0
+            a[1] = 1
+            b[1] = 0
+            c[1] = float("inf")
+
+            u_temp = u[:]
+            u_temp[1] = float("inf")
+
+            run_dp(a, b, c, u_temp, d)
+            ans = min(ans, c[N] + 1)
+
+        # ----------------------------------------------------
+        # Case 2: 아래쪽(바깥 원) 1번과 N번이 연결된 경우
+        # ----------------------------------------------------
+        if d[1] + d[N] <= W:
+            a, b, c = (
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+            )
+            a[0] = 0
+            a[1] = 1
+            b[1] = float("inf")
+            c[1] = 0
+
+            d_temp = d[:]
+            d_temp[1] = float("inf")
+
+            run_dp(a, b, c, u, d_temp)
+            ans = min(ans, b[N] + 1)
+
+        # ----------------------------------------------------
+        # Case 3: 위, 아래 모두 1번과 N번이 연결된 경우
+        # ----------------------------------------------------
+        if u[1] + u[N] <= W and d[1] + d[N] <= W:
+            a, b, c = (
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+                [float("inf")] * (N + 1),
+            )
+            a[0] = 0
+            a[1] = 0
+            b[1] = float("inf")
+            c[1] = float("inf")
+
+            u_temp = u[:]
+            d_temp = d[:]
+            u_temp[1] = float("inf")
+            d_temp[1] = float("inf")
+
+            run_dp(a, b, c, u_temp, d_temp)
+            ans = min(ans, a[N - 1] + 2)
+
+        print(ans)
+
+
+if __name__ == "__main__":
+    solve()

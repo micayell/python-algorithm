@@ -29,7 +29,6 @@ for start, end in valid_lines:
     heapq.heappush(min_heap, start)
 
     rail_start = end - d
-
     while min_heap and min_heap[0] < rail_start:
         heapq.heappop(min_heap)
 
